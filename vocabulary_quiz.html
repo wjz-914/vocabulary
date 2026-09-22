@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary Quiz</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f4f6fb;color:#20242b}
+.wrap{max-width:760px;margin:0 auto;padding:28px 16px}
+h1{text-align:center;margin:0 0 6px}.sub{text-align:center;color:#667085;margin-bottom:20px}
+.card{background:white;border-radius:18px;padding:24px;box-shadow:0 5px 22px #00000012}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.pill{background:#eef2ff;padding:7px 11px;border-radius:20px;font-size:14px}
+.word{text-align:center;font-size:28px;font-weight:bold;margin:18px 0 24px;word-break:break-word}
+.option{display:block;width:100%;padding:14px;margin:10px 0;border:1px solid #d9dde5;border-radius:12px;background:white;text-align:left;font-size:16px;cursor:pointer}
+.option:hover{background:#f7f8fb}.correct{background:#e8f7ed!important;border-color:#35a45b!important}.wrong{background:#fdecec!important;border-color:#d95353!important}
+.feedback{text-align:center;min-height:28px;font-weight:bold;margin:12px 0}
+button.action{border:0;border-radius:10px;padding:11px 15px;background:#eef2ff;cursor:pointer;margin:5px}
+button.primary{background:#4f46e5;color:white}.actions{text-align:center;margin-top:15px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.result{text-align:center;padding:20px}.big{font-size:28px;font-weight:bold}
+.review-list{margin-top:18px}.review-item{padding:12px;border-bottom:1px solid #eee}.review-item b{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>📚 Vocabulary Quiz</h1>
+<div class="sub">English → 中文意思 · 6个选项 · 错题复习</div>
+<div class="card" id="app"></div>
+</div>
+<script>
+const words=[
+["genetics","遗传学"],["empathy","同理心"],["evidence","证据"],["self-centred","以自我为中心的"],["respectful","尊重他人的"],["unconventional","非传统的"],["rebellious","叛逆的"],["traditional","传统的"],["outgoing","外向的"],["demanding","要求高的"],["insecure","缺乏安全感的"],["productivity","生产力／工作效率"],["ultimately","最终"],["academic performance","学业表现"],["frankly","坦白地说"],["miserable","痛苦的／悲惨的"],["eye-opening","大开眼界的"],["annoy","使烦恼／惹恼"],["get into fights with","与某人打架"],["let somebody be","别烦某人／让某人自己待着"],["make things worse for somebody","使某人的情况变得更糟"],["make somebody's life miserable","使某人的生活痛苦"],["put up with somebody/something","忍受某人／某事"],["have a word with somebody","和某人谈一谈"],["say something you might regret","说出可能会后悔的话"],["get on my nerves","使我很烦"],["depression","抑郁／忧郁"],["lie in under the covers","躺在被子下面"],["argument","争论／争吵"],["back up","支持／备份"],["fall asleep","入睡"],["fast asleep","熟睡"],["get enough sleep","获得足够的睡眠"],["get seven hours' sleep","睡七个小时"],["lie in","睡懒觉"],["nod off","打瞌睡／不知不觉睡着"],["oversleep","睡过头"],["skip sleep","不睡觉／牺牲睡眠"],["a lack of","缺乏"],["exhaustion","筋疲力尽"],["snore loudly","大声打鼾"],["petition","请愿书／请愿"],["knock-on effect","连锁影响"],["stereotypical","刻板印象的"],["irrelevant","无关的"],["get your beauty sleep","获得美容觉／充足睡眠"],["subconscious","潜意识的"],["let me sleep on it","让我考虑一晚再决定"],["invention","发明"],["a light sleeper","睡眠很浅的人"],["lose sleep over","因某事而担忧得睡不着"],["inspiration","灵感"],["discard","丢弃"],["in your dreams","做梦吧／不可能"],["beyond my wildest dreams","超乎我最疯狂的想象"],["frustratingly","令人懊恼地"],["disintegrate","瓦解／分解"],["dream job","理想工作"],["I'd never dream of doing","我绝不会想去做"],["a lack of sleep","睡眠不足"],["a dream comes true","梦想成真"]
+];
+
+const app=document.getElementById("app");
+let pool=[],pos=0,score=0,wrong=[],answered=false;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function start(list=words){
+ pool=shuffle(list);pos=0;score=0;wrong=[];show();
+}
+function show(){
+ if(pos>=pool.length){finish();return}
+ answered=false;
+ const q=pool[pos];
+ let choices=shuffle([q[1],...shuffle(words.filter(x=>x[0]!==q[0])).slice(0,5).map(x=>x[1])]);
+ app.innerHTML=`<div class="top"><span class="pill">第 ${pos+1} / ${pool.length} 题</span><span class="pill">Score: ${score}</span></div>
+ <div class="word">${q[0]}</div><div id="options"></div><div class="feedback" id="feedback"></div>
+ <div class="actions"><button class="action primary" id="next" disabled>下一题 →</button></div>`;
+ const box=document.getElementById("options");
+ choices.forEach(c=>{
+   const b=document.createElement("button");b.className="option";b.textContent=c;
+   b.onclick=()=>answer(b,c,q);box.appendChild(b);
+ });
+ document.getElementById("next").onclick=()=>{pos++;show()};
+}
+function answer(btn,c,q){
+ if(answered)return;answered=true;
+ const ok=c===q[1];
+ document.querySelectorAll(".option").forEach(b=>{if(b.textContent===q[1])b.classList.add("correct")});
+ if(ok){score++;btn.classList.add("correct");document.getElementById("feedback").textContent="✓ 正确！"}
+ else{btn.classList.add("wrong");document.getElementById("feedback").textContent="✗ 正确答案："+q[1];wrong.push(q)}
+ document.getElementById("next").disabled=false;
+}
+function finish(){
+ const rate=pool.length?Math.round(score/pool.length*100):0;
+ app.innerHTML=`<div class="result"><div class="big">🎉 Quiz 完成</div><p>成绩：<b>${score} / ${pool.length}</b></p><p>正确率：<b>${rate}%</b></p>
+ <div class="actions"><button class="action primary" id="again">再来一次</button>
+ <button class="action" id="review">复习错题 (${wrong.length})</button></div>
+ <div id="reviewList"></div></div>`;
+ document.getElementById("again").onclick=()=>start();
+ document.getElementById("review").onclick=()=>reviewWrong();
+}
+function reviewWrong(){
+ if(!wrong.length){alert("这次没有错题！");return}
+ const list=wrong.map(x=>`<div class="review-item"><b>${x[0]}</b>${x[1]}</div>`).join("");
+ app.innerHTML=`<div class="result"><div class="big">📝 错题复习</div><p>这些词答错了，可以重新测试。</p>
+ <div class="review-list">${list}</div><div class="actions"><button class="action primary" id="retry">重新测试错题</button><button class="action" id="home">回到全部词汇</button></div></div>`;
+ document.getElementById("retry").onclick=()=>start(wrong);
+ document.getElementById("home").onclick=()=>start();
+}
+start();
+</script>
+</body>
+</html>
